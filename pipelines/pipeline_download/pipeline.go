@@ -9,9 +9,9 @@ import (
 
 	"github.com/getsentry/sentry-go"
 	"github.com/t2bot/go-leaky-bucket"
-	"github.com/t2bot/go-singleflight-streams"
-
+	sfstreams "github.com/t2bot/go-singleflight-streams"
 	"github.com/t2bot/matrix-media-repo/common"
+	"github.com/t2bot/matrix-media-repo/common/config"
 	"github.com/t2bot/matrix-media-repo/common/rcontext"
 	"github.com/t2bot/matrix-media-repo/database"
 	"github.com/t2bot/matrix-media-repo/limits"
@@ -77,12 +77,17 @@ func Execute(ctx rcontext.RequestContext, origin string, mediaId string, opts Do
 	}
 
 	// Check rate limits before moving on much further
-	subject := limits.GetRequestIP(ctx.Request)
-	limitBucket, err := limits.GetBucket(ctx, subject)
-	if err != nil {
-		cancel()
-		return nil, nil, err
+	var limitBucket *leaky.Bucket
+	var subject string
+	if config.Get().RateLimit.Enabled {
+		subject = limits.GetRequestIP(ctx.Request)
+		limitBucket, err = limits.GetBucket(ctx, subject)
+		if err != nil {
+			cancel()
+			return nil, nil, err
+		}
 	}
+
 	didBucketMaxSize := false
 	if limitBucket != nil {
 		if record == nil {
