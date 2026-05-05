@@ -44,6 +44,14 @@ func Process(ctx rcontext.RequestContext, previewUrl string, preview m.PreviewRe
 		// Step 8: Insert the record
 		inserted, err := previewDb.Insert(result)
 		if err != nil {
+			if uploadedMedia != nil {
+				if cleanupErr := cleanupUnusedPreviewMedia(ctx, uploadedMedia); cleanupErr != nil {
+					ctx.Log.Warn("Non-fatal error cleaning up URL preview media after cache write failure: ", cleanupErr)
+					sentry.CaptureException(cleanupErr)
+				} else {
+					clearPreviewImage(result)
+				}
+			}
 			ctx.Log.Warn("Non-fatal error caching URL preview: ", err)
 			sentry.CaptureException(err)
 			return result, nil
@@ -54,6 +62,14 @@ func Process(ctx rcontext.RequestContext, previewUrl string, preview m.PreviewRe
 
 		existing, getErr := previewDb.Get(previewUrl, ts, languageHeader)
 		if getErr != nil {
+			if uploadedMedia != nil {
+				if cleanupErr := cleanupUnusedPreviewMedia(ctx, uploadedMedia); cleanupErr != nil {
+					ctx.Log.Warn("Non-fatal error cleaning up URL preview media after conflict read failure: ", cleanupErr)
+					sentry.CaptureException(cleanupErr)
+				} else {
+					clearPreviewImage(result)
+				}
+			}
 			ctx.Log.Warn("Non-fatal error reading existing URL preview after cache conflict: ", getErr)
 			sentry.CaptureException(getErr)
 			return result, nil
@@ -70,6 +86,14 @@ func Process(ctx rcontext.RequestContext, previewUrl string, preview m.PreviewRe
 
 			existing, getErr = previewDb.Get(previewUrl, ts, languageHeader)
 			if getErr != nil {
+				if uploadedMedia != nil {
+					if cleanupErr := cleanupUnusedPreviewMedia(ctx, uploadedMedia); cleanupErr != nil {
+						ctx.Log.Warn("Non-fatal error cleaning up URL preview media after upgraded conflict read failure: ", cleanupErr)
+						sentry.CaptureException(cleanupErr)
+					} else {
+						clearPreviewImage(result)
+					}
+				}
 				ctx.Log.Warn("Non-fatal error re-reading upgraded URL preview cache entry: ", getErr)
 				sentry.CaptureException(getErr)
 				return result, nil
@@ -109,4 +133,12 @@ func cleanupUnusedPreviewMedia(ctx rcontext.RequestContext, record *database.DbM
 	}
 
 	return datastores.RemoveWithDsId(ctx, record.DatastoreId, record.Location)
+}
+
+func clearPreviewImage(record *database.DbUrlPreview) {
+	record.ImageMxc = ""
+	record.ImageType = ""
+	record.ImageSize = 0
+	record.ImageWidth = 0
+	record.ImageHeight = 0
 }

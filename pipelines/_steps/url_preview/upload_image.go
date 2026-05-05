@@ -7,6 +7,7 @@ import (
 	"github.com/t2bot/matrix-media-repo/common/rcontext"
 	"github.com/t2bot/matrix-media-repo/database"
 	"github.com/t2bot/matrix-media-repo/datastores"
+	uploadstep "github.com/t2bot/matrix-media-repo/pipelines/_steps/upload"
 	"github.com/t2bot/matrix-media-repo/pipelines/pipeline_upload"
 	"github.com/t2bot/matrix-media-repo/thumbnailing"
 	"github.com/t2bot/matrix-media-repo/url_previewing/m"
@@ -19,12 +20,18 @@ func UploadImage(ctx rcontext.RequestContext, image *m.PreviewImage, onHost stri
 	}
 
 	defer image.Data.Close()
+	mediaId, err := uploadstep.GenerateMediaId(ctx, onHost)
+	if err != nil {
+		ctx.Log.Warn("Non-fatal error generating URL preview media ID: ", err)
+		sentry.CaptureException(err)
+		return nil
+	}
 	pr, pw := io.Pipe()
 	tee := io.TeeReader(image.Data, pw)
 	mediaChan := make(chan *database.DbMedia)
 	defer close(mediaChan)
 	go func() {
-		media, err := pipeline_upload.Execute(ctx, onHost, "", io.NopCloser(tee), image.ContentType, image.Filename, userId, datastores.LocalMediaKind)
+		media, err := pipeline_upload.Execute(ctx, onHost, mediaId, io.NopCloser(tee), image.ContentType, image.Filename, userId, datastores.LocalMediaKind)
 		if err != nil {
 			_ = pw.CloseWithError(err)
 		} else {
