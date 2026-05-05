@@ -13,9 +13,9 @@ import (
 	"github.com/t2bot/matrix-media-repo/util"
 )
 
-func UploadImage(ctx rcontext.RequestContext, image *m.PreviewImage, onHost string, userId string, forRecord *database.DbUrlPreview) {
+func UploadImage(ctx rcontext.RequestContext, image *m.PreviewImage, onHost string, userId string, forRecord *database.DbUrlPreview) *database.DbMedia {
 	if image == nil || image.Data == nil {
-		return
+		return nil
 	}
 
 	defer image.Data.Close()
@@ -45,7 +45,6 @@ func UploadImage(ctx rcontext.RequestContext, image *m.PreviewImage, onHost stri
 	if err != nil {
 		ctx.Log.Warn("Non-fatal error handling URL preview thumbnail: ", err)
 		sentry.CaptureException(err)
-		return
 	}
 	if g != nil {
 		_, w, h, err = g.GetOriginDimensions(r, image.ContentType, ctx)
@@ -57,7 +56,7 @@ func UploadImage(ctx rcontext.RequestContext, image *m.PreviewImage, onHost stri
 
 	record := <-mediaChan
 	if record == nil {
-		return
+		return nil
 	}
 
 	forRecord.ImageMxc = util.MxcUri(record.Origin, record.MediaId)
@@ -65,4 +64,6 @@ func UploadImage(ctx rcontext.RequestContext, image *m.PreviewImage, onHost stri
 	forRecord.ImageSize = record.SizeBytes
 	forRecord.ImageWidth = w
 	forRecord.ImageHeight = h
+
+	return record
 }

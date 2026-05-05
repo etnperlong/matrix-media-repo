@@ -44,7 +44,7 @@ func Execute(ctx rcontext.RequestContext, onHost string, previewUrl string, user
 	// Step 3: Process the URL
 	parsedUrl, err := url.Parse(previewUrl)
 	if err != nil {
-		previewDb.InsertError(previewUrl, common.ErrCodeInvalidHost)
+		previewDb.InsertError(previewUrl, common.ErrCodeInvalidHost, atBucket, opts.LanguageHeader)
 		return nil, common.ErrInvalidHost
 	}
 	parsedUrl.Fragment = "" // remove fragments because they're not useful to servers

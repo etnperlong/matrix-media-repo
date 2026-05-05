@@ -21,11 +21,13 @@ type DbRestrictedMedia struct {
 const insertRestrictedMedia = "INSERT INTO restricted_media (origin, media_id, condition_type, condition_value) VALUES ($1, $2, $3, $4);"
 const updateRestrictedMedia = "UPDATE restricted_media SET condition_type = $3, condition_value = $4 WHERE origin = $1 AND media_id = $2;"
 const selectRestrictedMedia = "SELECT origin, media_id, condition_type, condition_value FROM restricted_media WHERE origin = $1 AND media_id = $2;"
+const deleteRestrictedMedia = "DELETE FROM restricted_media WHERE origin = $1 AND media_id = $2;"
 
 type restrictedMediaTableStatements struct {
 	insertRestrictedMedia *sql.Stmt
 	updateRestrictedMedia *sql.Stmt
 	selectRestrictedMedia *sql.Stmt
+	deleteRestrictedMedia *sql.Stmt
 }
 
 type restrictedMediaTableWithContext struct {
@@ -45,6 +47,9 @@ func prepareRestrictedMediaTables(db *sql.DB) (*restrictedMediaTableStatements, 
 	}
 	if stmts.selectRestrictedMedia, err = db.Prepare(selectRestrictedMedia); err != nil {
 		return nil, errors.New("error preparing selectRestrictedMedia: " + err.Error())
+	}
+	if stmts.deleteRestrictedMedia, err = db.Prepare(deleteRestrictedMedia); err != nil {
+		return nil, errors.New("error preparing deleteRestrictedMedia: " + err.Error())
 	}
 
 	return stmts, nil
@@ -84,4 +89,9 @@ func (s *restrictedMediaTableWithContext) GetAllForId(origin string, mediaId str
 		results = append(results, val)
 	}
 	return results, nil
+}
+
+func (s *restrictedMediaTableWithContext) Delete(origin string, mediaId string) error {
+	_, err := s.statements.deleteRestrictedMedia.ExecContext(s.ctx, origin, mediaId)
+	return err
 }
