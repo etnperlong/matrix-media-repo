@@ -29,7 +29,10 @@ const selectThumbnailByParams = "SELECT origin, media_id, content_type, width, h
 const insertThumbnail = "INSERT INTO thumbnails (origin, media_id, content_type, width, height, method, animated, sha256_hash, size_bytes, creation_ts, datastore_id, location) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12);"
 const selectThumbnailByLocationExists = "SELECT TRUE FROM thumbnails WHERE datastore_id = $1 AND location = $2 LIMIT 1;"
 const selectThumbnailsForMedia = "SELECT origin, media_id, content_type, width, height, method, animated, sha256_hash, size_bytes, creation_ts, datastore_id, location FROM thumbnails WHERE origin = $1 AND media_id = $2;"
-const selectOldThumbnails = "SELECT origin, media_id, content_type, width, height, method, animated, sha256_hash, size_bytes, creation_ts, datastore_id, location FROM thumbnails WHERE sha256_hash IN (SELECT t2.sha256_hash FROM thumbnails AS t2 WHERE t2.creation_ts < $1);"
+const selectOldThumbnails = "SELECT origin, media_id, content_type, width, height, method, animated, sha256_hash, size_bytes, creation_ts, datastore_id, location FROM thumbnails WHERE creation_ts < $1;"
+const oldThumbnailsOrder = "creation_ts ASC, origin ASC, media_id ASC, width ASC, height ASC, method ASC, animated ASC, content_type ASC, sha256_hash ASC, size_bytes ASC, datastore_id ASC, location ASC"
+const selectOldThumbnailsBatch = "SELECT origin, media_id, content_type, width, height, method, animated, sha256_hash, size_bytes, creation_ts, datastore_id, location FROM thumbnails AS t WHERE t.creation_ts < $1 ORDER BY " + oldThumbnailsOrder + " LIMIT $2;"
+const selectOldThumbnailsBatchAfter = "SELECT origin, media_id, content_type, width, height, method, animated, sha256_hash, size_bytes, creation_ts, datastore_id, location FROM thumbnails AS t WHERE t.creation_ts < $1 AND (t.creation_ts, t.origin, t.media_id, t.width, t.height, t.method, t.animated, t.content_type, t.sha256_hash, t.size_bytes, t.datastore_id, t.location) > ($3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14) ORDER BY " + oldThumbnailsOrder + " LIMIT $2;"
 const deleteThumbnail = "DELETE FROM thumbnails WHERE origin = $1 AND media_id = $2 AND content_type = $3 AND width = $4 AND height = $5 AND method = $6 AND animated = $7 AND sha256_hash = $8 AND size_bytes = $9 AND creation_ts = $10 AND datastore_id = $11 AND location = $12;"
 const updateThumbnailLocation = "UPDATE thumbnails SET datastore_id = $3, location = $4 WHERE datastore_id = $1 AND location = $2;"
 const selectThumbnailsByLocation = "SELECT origin, media_id, content_type, width, height, method, animated, sha256_hash, size_bytes, creation_ts, datastore_id, location FROM thumbnails WHERE datastore_id = $1 AND location = $2;"
@@ -40,6 +43,8 @@ type thumbnailsTableStatements struct {
 	selectThumbnailByLocationExists *sql.Stmt
 	selectThumbnailsForMedia        *sql.Stmt
 	selectOldThumbnails             *sql.Stmt
+	selectOldThumbnailsBatch        *sql.Stmt
+	selectOldThumbnailsBatchAfter   *sql.Stmt
 	deleteThumbnail                 *sql.Stmt
 	updateThumbnailLocation         *sql.Stmt
 	selectThumbnailsByLocation      *sql.Stmt
@@ -68,6 +73,12 @@ func prepareThumbnailsTables(db *sql.DB) (*thumbnailsTableStatements, error) {
 	}
 	if stmts.selectOldThumbnails, err = db.Prepare(selectOldThumbnails); err != nil {
 		return nil, errors.New("error preparing selectOldThumbnails: " + err.Error())
+	}
+	if stmts.selectOldThumbnailsBatch, err = db.Prepare(selectOldThumbnailsBatch); err != nil {
+		return nil, errors.New("error preparing selectOldThumbnailsBatch: " + err.Error())
+	}
+	if stmts.selectOldThumbnailsBatchAfter, err = db.Prepare(selectOldThumbnailsBatchAfter); err != nil {
+		return nil, errors.New("error preparing selectOldThumbnailsBatchAfter: " + err.Error())
 	}
 	if stmts.deleteThumbnail, err = db.Prepare(deleteThumbnail); err != nil {
 		return nil, errors.New("error preparing deleteThumbnail: " + err.Error())
@@ -129,6 +140,17 @@ func (s *thumbnailsTableWithContext) GetForMedia(origin string, mediaId string) 
 
 func (s *thumbnailsTableWithContext) GetOlderThan(ts int64) ([]*DbThumbnail, error) {
 	return s.scanRows(s.statements.selectOldThumbnails.QueryContext(s.ctx, ts))
+}
+
+func (s *thumbnailsTableWithContext) GetOlderThanBatch(ts int64, limit int) ([]*DbThumbnail, error) {
+	return s.scanRows(s.statements.selectOldThumbnailsBatch.QueryContext(s.ctx, ts, limit))
+}
+
+func (s *thumbnailsTableWithContext) GetOlderThanBatchAfter(ts int64, limit int, after *DbThumbnail) ([]*DbThumbnail, error) {
+	if after == nil {
+		return s.GetOlderThanBatch(ts, limit)
+	}
+	return s.scanRows(s.statements.selectOldThumbnailsBatchAfter.QueryContext(s.ctx, ts, limit, after.CreationTs, after.Origin, after.MediaId, after.Width, after.Height, after.Method, after.Animated, after.ContentType, after.Sha256Hash, after.SizeBytes, after.DatastoreId, after.Location))
 }
 
 func (s *thumbnailsTableWithContext) GetByLocation(datastoreId string, location string) ([]*DbThumbnail, error) {
