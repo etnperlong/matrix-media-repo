@@ -7,7 +7,6 @@ import (
 	"github.com/t2bot/matrix-media-repo/api/_apimeta"
 	"github.com/t2bot/matrix-media-repo/api/_responses"
 	"github.com/t2bot/matrix-media-repo/common/rcontext"
-	"github.com/t2bot/matrix-media-repo/util"
 )
 
 func RequireRepoAdmin(generator GeneratorWithUserFn) GeneratorFn {
@@ -17,7 +16,7 @@ func RequireRepoAdmin(generator GeneratorWithUserFn) GeneratorFn {
 				panic(errors.New("safety check failed: Repo admin access check received empty user ID"))
 			}
 
-			if !user.IsShared && !util.IsGlobalAdmin(user.UserId) {
+			if !user.IsRepoAdmin() {
 				return _responses.AuthFailed()
 			}
 

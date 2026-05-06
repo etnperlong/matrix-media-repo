@@ -170,7 +170,7 @@ func performQuarantineRequest(ctx rcontext.RequestContext, host string, allowOth
 }
 
 func getQuarantineRequestInfo(r *http.Request, rctx rcontext.RequestContext, user _apimeta.UserInfo) (bool, bool, bool) {
-	isGlobalAdmin := util.IsGlobalAdmin(user.UserId) || user.IsShared
+	isGlobalAdmin := user.IsRepoAdmin()
 	canQuarantine := isGlobalAdmin
 	allowOtherHosts := isGlobalAdmin
 	isLocalAdmin := false

@@ -42,7 +42,7 @@ func ExportUserData(r *http.Request, rctx rcontext.RequestContext, user _apimeta
 		return _responses.BadRequest("archiving is not enabled")
 	}
 
-	isAdmin := util.IsGlobalAdmin(user.UserId) || user.IsShared
+	isAdmin := user.IsRepoAdmin()
 	if !rctx.Config.Archiving.SelfService && !isAdmin {
 		return _responses.AuthFailed()
 	}
@@ -77,7 +77,7 @@ func ExportServerData(r *http.Request, rctx rcontext.RequestContext, user _apime
 		return _responses.BadRequest("archiving is not enabled")
 	}
 
-	isAdmin := util.IsGlobalAdmin(user.UserId) || user.IsShared
+	isAdmin := user.IsRepoAdmin()
 	if !rctx.Config.Archiving.SelfService && !isAdmin {
 		return _responses.AuthFailed()
 	}

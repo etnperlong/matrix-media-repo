@@ -18,6 +18,16 @@ import (
 
 type GeneratorWithUserFn = func(r *http.Request, ctx rcontext.RequestContext, user _apimeta.UserInfo) interface{}
 
+var getUserIdForToken = _auth_cache.GetUserId
+
+func applyTrustedRepoAdminHeader(r *http.Request, ctx rcontext.RequestContext, user _apimeta.UserInfo) (rcontext.RequestContext, _apimeta.UserInfo) {
+	if _apimeta.RequestClaimsRepoAdmin(r) {
+		ctx = ctx.LogWithFields(logrus.Fields{"trustedRepoAdminHeader": true})
+		user.IsTrustedHeaderAdmin = true
+	}
+	return ctx, user
+}
+
 func RequireAccessToken(generator GeneratorWithUserFn, allowGuests bool) GeneratorFn {
 	return func(r *http.Request, ctx rcontext.RequestContext) interface{} {
 		accessToken := util.GetAccessTokenFromRequest(r)
@@ -30,14 +40,15 @@ func RequireAccessToken(generator GeneratorWithUserFn, allowGuests bool) Generat
 		}
 		if config.Get().SharedSecret.Enabled && accessToken == config.Get().SharedSecret.Token {
 			ctx = ctx.LogWithFields(logrus.Fields{"sharedSecretAuth": true})
-			return generator(r, ctx, _apimeta.UserInfo{
+			ctx, user := applyTrustedRepoAdminHeader(r, ctx, _apimeta.UserInfo{
 				UserId:      "@sharedsecret",
 				AccessToken: accessToken,
 				IsShared:    true,
 			})
+			return generator(r, ctx, user)
 		}
 		appserviceUserId := util.GetAppserviceUserIdFromRequest(r)
-		userId, isGuest, err := _auth_cache.GetUserId(ctx, accessToken, appserviceUserId)
+		userId, isGuest, err := getUserIdForToken(ctx, accessToken, appserviceUserId)
 		if isGuest && !allowGuests {
 			return _responses.GuestAuthFailed()
 		}
@@ -51,10 +62,11 @@ func RequireAccessToken(generator GeneratorWithUserFn, allowGuests bool) Generat
 		}
 
 		ctx = ctx.LogWithFields(logrus.Fields{"authUserId": userId})
-		return generator(r, ctx, _apimeta.UserInfo{
+		ctx, user := applyTrustedRepoAdminHeader(r, ctx, _apimeta.UserInfo{
 			UserId:      userId,
 			AccessToken: accessToken,
 			IsShared:    false,
 		})
+		return generator(r, ctx, user)
 	}
 }

@@ -193,6 +193,19 @@ sharedSecretAuth:
   # Use a secure value here to prevent unauthorized access to the media repository.
   token: "PutSomeRandomSecureValueHere"
 
+# Trusted admin headers let an upstream auth gateway mark an already-authenticated request as a
+# repo administrator. This does not replace normal authentication: clients must still present a
+# valid Matrix access token or the shared secret above. Only enable this behind a gateway/reverse
+# proxy that strips this header from external requests and sets it itself after validating admin
+# privileges.
+trustedAdminHeader:
+  # Set this to true to trust the header below for repo admin awareness.
+  enabled: false
+
+  # The header name and exact value to trust from your gateway.
+  header: "X-Matrix-Repo-Admin"
+  value: "true"
+
 # Datastores are places where media should be persisted. This isn't dedicated for just uploads:
 # thumbnails and other misc data is also stored in these places. The media repo, when looking
 # for a datastore to use, will always use the smallest datastore first.

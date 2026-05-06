@@ -1,23 +1,24 @@
 package config
 
 type MainRepoConfig struct {
-	MinimumRepoConfig `yaml:",inline"`
-	General           GeneralConfig         `yaml:"repo"`
-	Homeservers       []HomeserverConfig    `yaml:"homeservers,flow"`
-	Admins            []string              `yaml:"admins,flow"`
-	Database          DatabaseConfig        `yaml:"database"`
-	Downloads         MainDownloadsConfig   `yaml:"downloads"`
-	Thumbnails        MainThumbnailsConfig  `yaml:"thumbnails"`
-	UrlPreviews       MainUrlPreviewsConfig `yaml:"urlPreviews"`
-	RateLimit         RateLimitConfig       `yaml:"rateLimit"`
-	Metrics           MetricsConfig         `yaml:"metrics"`
-	SharedSecret      SharedSecretConfig    `yaml:"sharedSecretAuth"`
-	Federation        FederationConfig      `yaml:"federation"`
-	Plugins           []PluginConfig        `yaml:"plugins,flow"`
-	Sentry            SentryConfig          `yaml:"sentry"`
-	Redis             RedisConfig           `yaml:"redis"`
-	Tasks             TasksConfig           `yaml:"tasks"`
-	PGO               PGOConfig             `yaml:"pgo"`
+	MinimumRepoConfig  `yaml:",inline"`
+	General            GeneralConfig            `yaml:"repo"`
+	Homeservers        []HomeserverConfig       `yaml:"homeservers,flow"`
+	Admins             []string                 `yaml:"admins,flow"`
+	Database           DatabaseConfig           `yaml:"database"`
+	Downloads          MainDownloadsConfig      `yaml:"downloads"`
+	Thumbnails         MainThumbnailsConfig     `yaml:"thumbnails"`
+	UrlPreviews        MainUrlPreviewsConfig    `yaml:"urlPreviews"`
+	RateLimit          RateLimitConfig          `yaml:"rateLimit"`
+	Metrics            MetricsConfig            `yaml:"metrics"`
+	SharedSecret       SharedSecretConfig       `yaml:"sharedSecretAuth"`
+	TrustedAdminHeader TrustedAdminHeaderConfig `yaml:"trustedAdminHeader"`
+	Federation         FederationConfig         `yaml:"federation"`
+	Plugins            []PluginConfig           `yaml:"plugins,flow"`
+	Sentry             SentryConfig             `yaml:"sentry"`
+	Redis              RedisConfig              `yaml:"redis"`
+	Tasks              TasksConfig              `yaml:"tasks"`
+	PGO                PGOConfig                `yaml:"pgo"`
 }
 
 func NewDefaultMainConfig() MainRepoConfig {
@@ -43,6 +44,11 @@ func NewDefaultMainConfig() MainRepoConfig {
 		},
 		Homeservers: []HomeserverConfig{},
 		Admins:      []string{},
+		TrustedAdminHeader: TrustedAdminHeaderConfig{
+			Enabled: false,
+			Header:  "X-Matrix-Repo-Admin",
+			Value:   "true",
+		},
 		Downloads: MainDownloadsConfig{
 			DownloadsConfig: DownloadsConfig{
 				MaxSizeBytes:               104857600, // 100mb

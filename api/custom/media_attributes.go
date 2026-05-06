@@ -12,7 +12,6 @@ import (
 	"github.com/t2bot/matrix-media-repo/common/rcontext"
 	"github.com/t2bot/matrix-media-repo/database"
 	"github.com/t2bot/matrix-media-repo/matrix"
-	"github.com/t2bot/matrix-media-repo/util"
 )
 
 type Attributes struct {
@@ -20,7 +19,7 @@ type Attributes struct {
 }
 
 func canChangeAttributes(rctx rcontext.RequestContext, r *http.Request, origin string, user _apimeta.UserInfo) bool {
-	isGlobalAdmin := util.IsGlobalAdmin(user.UserId) || user.IsShared
+	isGlobalAdmin := user.IsRepoAdmin()
 	if isGlobalAdmin {
 		return true
 	}

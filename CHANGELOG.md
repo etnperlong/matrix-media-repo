@@ -10,6 +10,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 ### Fixed
 
 * Harden animated GIF thumbnail generation by downgrading oversized or overly complex GIFs to still-frame thumbnails before entering the full animated decode path.
+* Add trusted-header repo admin awareness for OIDC/auth-gateway deployments while preserving existing config admin, shared secret, and homeserver admin API behavior.
 
 ### [1.3.8] - January 16, 2025
 

@@ -76,6 +76,12 @@ type SharedSecretConfig struct {
 	Token   string `yaml:"token"`
 }
 
+type TrustedAdminHeaderConfig struct {
+	Enabled bool   `yaml:"enabled"`
+	Header  string `yaml:"header"`
+	Value   string `yaml:"value"`
+}
+
 type FederationConfig struct {
 	BackoffAt          int      `yaml:"backoffAt"`
 	IgnoredHosts       []string `yaml:"ignoredHosts,flow"`
