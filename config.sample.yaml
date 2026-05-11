@@ -494,13 +494,13 @@ thumbnails:
     - "image/webp"
     - "image/bmp"
     - "image/tiff"
-    #- "image/svg+xml" # Be sure to have ImageMagick installed to thumbnail SVG files
-    #- "image/jxl" # Be sure to have ImageMagick installed to thumbnail JPEGXL files
+    #- "image/svg+xml" # Supported by the slim/full container images via rsvg-convert
+    #- "image/jxl" # Supported by the slim/full container images via djxl (libjxl-tools)
     - "audio/mpeg"
     - "audio/ogg"
     - "audio/wav"
     - "audio/flac"
-    #- "video/mp4" # Be sure to have ffmpeg installed to thumbnail video files
+    #- "video/mp4" # Requires the full container image or a local ffmpeg install to thumbnail video files
 
   # Animated thumbnails can be CPU intensive to generate. To disable the generation of animated
   # thumbnails, set this to false. If disabled, regular thumbnails will be returned.

@@ -25,6 +25,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 * Build and CI now use Go 1.26 to satisfy the minimum toolchain required by the upgraded `golang.org/x/image` security release and keep the workflows aligned with the container builder image.
 * Static CI now runs `govulncheck ./cmd/...` as a fixed security gate for deployable binaries while leaving the container-backed integration test dependency graph to the separate baseline review flow.
 * The container image now builds with `golang:1.26-alpine3.23`, uses Alpine's packaged `libheif` instead of recompiling it in-image, and starts `media_repo` directly without the old `run.sh`/`dos2unix`/UID-GID wrapper flow.
+* SVG thumbnailing now uses `rsvg-convert`, JPEG XL thumbnailing now uses `djxl`/`jxlinfo`, the default runtime image is a slimmer target without `ffmpeg`, and a separate `runtime-full` image target keeps MP4 thumbnail support.
 
 ### [1.3.8] - January 16, 2025
 

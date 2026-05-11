@@ -4,7 +4,6 @@ import (
 	"errors"
 	"io"
 	"os"
-	"os/exec"
 	"path"
 
 	"github.com/t2bot/matrix-media-repo/common/rcontext"
@@ -49,12 +48,16 @@ func (d mp4Generator) GenerateThumbnail(b io.Reader, contentType string, width i
 		return nil, errors.New("mp4: error creating temp video file: " + err.Error())
 	}
 	if _, err = io.Copy(f, b); err != nil {
+		_ = f.Close()
 		return nil, errors.New("mp4: error writing temp video file: " + err.Error())
 	}
+	if err = f.Close(); err != nil {
+		return nil, errors.New("mp4: error closing temp video file: " + err.Error())
+	}
 
-	err = exec.Command("ffmpeg", "-f", "mp4", "-i", tempFile1, "-frames:v", "1", "-update", "true", "-vf", "scale='min(4096,iw)':'min(4096,ih)':force_original_aspect_ratio=1,pad=iw:ih:-1:-1,setsar=1", tempFile2).Run()
+	err = runExternalTool(ffmpegTool, "-f", "mp4", "-i", tempFile1, "-frames:v", "1", "-update", "true", "-vf", "scale='min(4096,iw)':'min(4096,ih)':force_original_aspect_ratio=1,pad=iw:ih:-1:-1,setsar=1", tempFile2)
 	if err != nil {
-		return nil, errors.New("mp4: error converting video file: " + err.Error())
+		return nil, errors.New("mp4: error converting video file with ffmpeg: " + err.Error())
 	}
 
 	f, err = os.OpenFile(tempFile2, os.O_RDONLY, 0640)

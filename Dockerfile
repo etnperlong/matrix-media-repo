@@ -12,14 +12,12 @@ COPY . /opt
 RUN ./build.sh
 
 # ---- Stage 1 ----
-# Final runtime stage.
-FROM alpine:3.23
+# Shared runtime base.
+FROM alpine:3.23 AS runtime-base
 
 RUN mkdir /plugins
 RUN apk add --no-cache \
         ca-certificates \
-        imagemagick \
-        ffmpeg \
         libheif
 
 COPY --from=builder /opt/bin/plugin_antispam_ocr /plugins/
@@ -44,6 +42,25 @@ WORKDIR /data
 
 ENV REPO_CONFIG=/data/media-repo.yaml
 
-CMD ["media_repo"]
 VOLUME ["/data", "/media"]
 EXPOSE 8000
+CMD ["media_repo"]
+
+# ---- Stage 2 ----
+# Default slim runtime with SVG/JXL support, but without ffmpeg.
+FROM runtime-base AS runtime-slim
+
+RUN apk add --no-cache \
+		rsvg-convert \
+		libjxl-tools
+
+# ---- Stage 3 ----
+# Full runtime adds MP4 thumbnailing support.
+FROM runtime-slim AS runtime-full
+
+RUN apk add --no-cache \
+		ffmpeg
+
+# ---- Stage 4 ----
+# Default final image target.
+FROM runtime-slim AS runtime

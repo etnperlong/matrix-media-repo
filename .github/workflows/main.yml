@@ -56,3 +56,16 @@ jobs:
       - name: "Run: tests"
         run: "go test -c -v ./test && ./test.test '-test.v' -test.parallel 1" # cheat and work around working directory issues
         timeout-minutes: 30
+  runtime-images:
+    name: 'Runtime Images'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: "Build: slim runtime"
+        run: 'docker build --target runtime -t mmr-runtime-slim:test .'
+      - name: "Check: slim runtime tools"
+        run: 'docker run --rm mmr-runtime-slim:test sh -lc "command -v rsvg-convert && command -v djxl && ! command -v ffmpeg"'
+      - name: "Build: full runtime"
+        run: 'docker build --target runtime-full -t mmr-runtime-full:test .'
+      - name: "Check: full runtime tools"
+        run: 'docker run --rm mmr-runtime-full:test sh -lc "command -v rsvg-convert && command -v djxl && command -v ffmpeg"'
