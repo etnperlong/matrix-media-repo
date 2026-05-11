@@ -74,7 +74,11 @@ func TryDownload(ctx rcontext.RequestContext, origin string, mediaId string) (*d
 				return
 			}
 			if resp.StatusCode == http.StatusForbidden || resp.StatusCode == http.StatusUnauthorized {
-				errFn(matrix.MakeServerNotAllowedError(ctx.Request.Host))
+				requestHost := ""
+				if ctx.Request != nil {
+					requestHost = ctx.Request.Host
+				}
+				errFn(matrix.MakeServerNotAllowedError(requestHost))
 				return
 			} else if resp.StatusCode == http.StatusNotFound {
 				decoder := json.NewDecoder(io.LimitReader(resp.Body, 1*1024*1024))
