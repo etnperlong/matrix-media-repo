@@ -29,8 +29,12 @@ jobs:
         run: "$PWD/bin/compile_assets"
       - name: "Prepare: staticcheck"
         run: 'go install honnef.co/go/tools/cmd/staticcheck@latest'
+      - name: "Prepare: govulncheck"
+        run: 'go install golang.org/x/vuln/cmd/govulncheck@latest'
       - run: 'go vet ./cmd/...'
       - run: 'staticcheck ./cmd/...'
+      - name: "Run: govulncheck"
+        run: '$(go env GOPATH)/bin/govulncheck ./cmd/...'
   test:
     name: 'Go Test'
     runs-on: ubuntu-latest

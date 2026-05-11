@@ -16,12 +16,14 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 
 ### Security
 
-* Upgrade URL preview HTML parsing dependencies to `golang.org/x/net` v0.45.0 to pick up current `html.Parse`/tokenizer security fixes.
+* Upgrade URL preview HTML parsing dependencies to `golang.org/x/net` v0.48.0 to pick up current `html.Parse`/tokenizer security fixes.
 * Upgrade thumbnail decoder dependencies to `golang.org/x/image` v0.39.0 to pick up current WEBP/TIFF decoder security fixes.
+* Upgrade Redis and plugin runtime dependencies to `github.com/redis/go-redis/v9` v9.7.3 and `google.golang.org/grpc` v1.79.3 to pick up current security fixes in deployable command builds.
 
 ### Changed
 
 * Build and CI now use Go 1.25 to satisfy the minimum toolchain required by the upgraded `golang.org/x/image` security release.
+* Static CI now runs `govulncheck ./cmd/...` as a fixed security gate for deployable binaries while leaving the container-backed integration test dependency graph to the separate baseline review flow.
 
 ### [1.3.8] - January 16, 2025
 
