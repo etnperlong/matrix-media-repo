@@ -9,8 +9,10 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 
 ### Fixed
 
+* Avoid nil-request crashes in background download/export paths by skipping request-based rate limiting when no HTTP request context exists.
 * Harden animated GIF thumbnail generation by downgrading oversized or overly complex GIFs to still-frame thumbnails before entering the full animated decode path.
 * Add trusted-header repo admin awareness for OIDC/auth-gateway deployments while preserving existing config admin, shared secret, and homeserver admin API behavior.
+* Fix `X-Forwarded-For` parsing when trusting forwarded addresses, and log both the resolved remote address and rate-limit subject to make proxy/rate-limit regressions easier to verify.
 
 ### [1.3.8] - January 16, 2025
 

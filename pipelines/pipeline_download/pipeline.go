@@ -79,7 +79,7 @@ func Execute(ctx rcontext.RequestContext, origin string, mediaId string, opts Do
 	// Check rate limits before moving on much further
 	var limitBucket *leaky.Bucket
 	var subject string
-	if config.Get().RateLimit.Enabled {
+	if config.Get().RateLimit.Enabled && ctx.Request != nil {
 		subject = limits.GetRequestIP(ctx.Request)
 		limitBucket, err = limits.GetBucket(ctx, subject)
 		if err != nil {
@@ -161,7 +161,7 @@ func Execute(ctx rcontext.RequestContext, origin string, mediaId string, opts Do
 		return nil, r, err
 	}
 	var notAllowedErr *matrix.ServerNotAllowedError
-	if errors.As(err, &notAllowedErr) {
+	if errors.As(err, &notAllowedErr) && ctx.Request != nil {
 		if notAllowedErr.ServerName != ctx.Request.Host {
 			ctx.Log.Debug("'Not allowed' error is for another server - retrying")
 			cancel()

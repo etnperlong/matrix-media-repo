@@ -32,6 +32,10 @@ func GetRequestLimiter() *limiter.Limiter {
 }
 
 func GetRequestIP(r *http.Request) string {
+	if r == nil {
+		return ""
+	}
+
 	// Same implementation as tollbooth
 	return libstring.RemoteIP(requestLimiter.GetIPLookups(), requestLimiter.GetForwardedForIndexFromBehind(), r)
 }
