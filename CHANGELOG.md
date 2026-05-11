@@ -14,6 +14,14 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 * Add trusted-header repo admin awareness for OIDC/auth-gateway deployments while preserving existing config admin, shared secret, and homeserver admin API behavior.
 * Fix `X-Forwarded-For` parsing when trusting forwarded addresses, and log both the resolved remote address and rate-limit subject to make proxy/rate-limit regressions easier to verify.
 
+### Security
+
+* Upgrade URL preview HTML parsing dependencies to `golang.org/x/net` v0.45.0 to pick up current `html.Parse`/tokenizer security fixes.
+
+### Changed
+
+* Build and CI now use Go 1.24 to satisfy the minimum toolchain required by the upgraded `golang.org/x/net` security release.
+
 ### [1.3.8] - January 16, 2025
 
 ### Security
