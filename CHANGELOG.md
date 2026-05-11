@@ -17,10 +17,11 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 ### Security
 
 * Upgrade URL preview HTML parsing dependencies to `golang.org/x/net` v0.45.0 to pick up current `html.Parse`/tokenizer security fixes.
+* Upgrade thumbnail decoder dependencies to `golang.org/x/image` v0.39.0 to pick up current WEBP/TIFF decoder security fixes.
 
 ### Changed
 
-* Build and CI now use Go 1.24 to satisfy the minimum toolchain required by the upgraded `golang.org/x/net` security release.
+* Build and CI now use Go 1.25 to satisfy the minimum toolchain required by the upgraded `golang.org/x/image` security release.
 
 ### [1.3.8] - January 16, 2025
 

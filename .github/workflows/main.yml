@@ -9,7 +9,7 @@ jobs:
       - uses: actions/checkout@v4
       - uses: actions/setup-go@v5
         with:
-          go-version: '1.24'
+          go-version: '1.25'
       - name: "Install libheif"
         run: "chmod +x ./.github/workflows/build-libheif.sh && ./.github/workflows/build-libheif.sh"
       - run: './build.sh' # verify the thing compiles
@@ -20,7 +20,7 @@ jobs:
       - uses: actions/checkout@v4
       - uses: actions/setup-go@v5
         with:
-          go-version: '1.24'
+          go-version: '1.25'
       - name: "Install libheif"
         run: "chmod +x ./.github/workflows/build-libheif.sh && ./.github/workflows/build-libheif.sh"
       - name: "Prepare: compile assets"
@@ -38,13 +38,17 @@ jobs:
       - uses: actions/checkout@v4
       - uses: actions/setup-go@v5
         with:
-          go-version: '1.24'
+          go-version: '1.25'
+      - name: "Install libheif"
+        run: "chmod +x ./.github/workflows/build-libheif.sh && ./.github/workflows/build-libheif.sh"
       - name: "Prepare: compile assets"
         run: "GOBIN=$PWD/bin go install -v ./cmd/utilities/compile_assets"
       - name: "Run: compile assets"
         run: "$PWD/bin/compile_assets"
       - name: "Run: URL preview package tests"
         run: "go test ./url_previewing/... ./pipelines/_steps/url_preview ./pipelines/pipeline_preview"
+      - name: "Run: thumbnail package tests"
+        run: "go test ./thumbnailing/... ./pipelines/_steps/thumbnails ./pipelines/pipeline_thumbnail"
       - name: "Run: tests"
         run: "go test -c -v ./test && ./test.test '-test.v' -test.parallel 1" # cheat and work around working directory issues
         timeout-minutes: 30

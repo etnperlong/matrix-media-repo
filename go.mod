@@ -1,6 +1,6 @@
 module github.com/t2bot/matrix-media-repo
 
-go 1.24.0
+go 1.25.0
 
 require (
 	github.com/DavidHuie/gomigrate v0.0.0-20190826182718-4adc4b3de142
@@ -37,7 +37,7 @@ require (
 	github.com/sebest/xff v0.0.0-20210106013422-671bd2870b3a
 	github.com/sirupsen/logrus v1.9.3
 	golang.org/x/crypto v0.42.0 // indirect
-	golang.org/x/image v0.23.0
+	golang.org/x/image v0.39.0
 	golang.org/x/net v0.45.0
 )
 
@@ -60,7 +60,7 @@ require (
 	github.com/t2bot/pgo-fleet/embedded v1.0.1
 	github.com/testcontainers/testcontainers-go v0.34.0
 	github.com/testcontainers/testcontainers-go/modules/postgres v0.34.0
-	golang.org/x/sync v0.17.0
+	golang.org/x/sync v0.20.0
 	golang.org/x/term v0.35.0
 )
 
@@ -141,7 +141,7 @@ require (
 	go.opentelemetry.io/otel/metric v1.33.0 // indirect
 	go.opentelemetry.io/otel/trace v1.33.0 // indirect
 	golang.org/x/sys v0.36.0 // indirect
-	golang.org/x/text v0.29.0 // indirect
+	golang.org/x/text v0.36.0 // indirect
 	google.golang.org/genproto/googleapis/rpc v0.0.0-20241216192217-9240e9c98484 // indirect
 	google.golang.org/protobuf v1.36.0 // indirect
 	gopkg.in/yaml.v2 v2.4.0 // indirect
